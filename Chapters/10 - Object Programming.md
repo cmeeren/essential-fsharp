@@ -397,15 +397,16 @@ c1 = c2 // false
 c1 = c3 // true - reference the same instance
 ```
 
-To support something that works like structural equality, we need to override the `GetHashCode` and `Equals` functions, implement `IEquatable<'T>`. If we are going to use it in other .NET languages, we need to handle the equality operator using `op_Equality` and apply the `AllowNullLiteral` attribute:
+To support something that works like structural equality, we need to override the `GetHashCode` and `Equals` functions, implement `IEquatable<'T>`. If we are going to use it in other .NET languages, we need to handle the equality operator using `op_Equality`:
 
 ```fsharp
 open System
 
-[<AllowNullLiteral>]
 type GpsCoordinate(latitude: float, longitude: float) =
     let equals (other: GpsCoordinate) =
-        if isNull other then
+        // Since the F# compiler by default requires that F# types are non-nullable,
+        // we must "trick" it to perform a null check by boxing the other value:
+        if isNull (box other) then
             false
         else
             latitude = other.Latitude
